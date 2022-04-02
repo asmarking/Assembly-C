@@ -11,56 +11,54 @@
 
     .global node_lookup               //make node_lookup global for linking to
     .type   node_lookup, %function    //define node_lookup to be a function
-    .equ 	FP_OFF,32 //FILL THIS 	  // fp offset distance from sp 
-		.equ  ARG5,4
-		.equ NEXT,24		
+    .equ 	FP_OFF,0x8 //FILL THIS 	  // fp offset distance from sp 
+node_lookup:	
+// function prologue
+.equ FP_OFFSET, 12
+.equ ARG5,4
+push {r4,r5,fp,lr}
+add fp, sp, FP_OFFSET
 
-node_lookup:
-//function prologue 
+//function body 
 
-push {r4-r10,fp,lr}
-add fp, sp, FP_OFF
-
-
-
-//function body
-
-ldr r5,[fp,ARG5] 
 cmp r0, 0x0
 beq .Lexit_while
 
 .Lwhile:
-	
-	ldr r4,[r0] 		//load year
-	ldr r6,[r0,4]		//load month
-	ldr r7,[r0,8]		//load day
-	ldr r8,[r0,12]	//load hour
-	
-	cmp r4, r1   	//check year
-	bne .Lexit_if	
-	cmp r6, r2		//check month
-	bne .Lexit_if
-	cmp r7, r3  		//check day
-	bne .Lexit_if
-	cmp r8,r5		//check hour
-	bne .Lexit_if
 
-	b .Lexit_while
+    ldr r4, [r0]		//Check year
+    cmp r4, r1
+    bne .Lexit_if
+
+    ldr r4, [r0,4]		//Check month
+    cmp r4, r2
+    bne .Lexit_if
+
+    ldr r4, [r0,8]		//Check day
+    cmp r4, r3
+    bne .Lexit_if
+
+    ldr r4, [r0,12]		//Check hour
+    ldr r5,[fp,ARG5] 
+		cmp r4,r5
+    bne .Lexit_if
+
+    b .Lexit_while
 
 .Lexit_if:
 
- 	ldr r0, [r0,24]  //seg fault here
-  cmp r0, 0x0
-  bne .Lwhile
-	
+ ldr r0, [r0, 24] 
+    cmp r0, 0x0
+    bne .Lwhile
+
 .Lexit_while:
 
+//function epilogue
+ 
+    sub sp, fp, FP_OFFSET
+    pop {r4,r5,fp,lr}
+    bx lr
 
-// function epilogue
-
-sub sp, fp, FP_OFF
-pop {r4-r10,fp,lr}
-bx lr
 
 
 // function footer - do not edit below
